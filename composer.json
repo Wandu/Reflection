@@ -1,0 +1,34 @@
+{
+    "name": "wandu/reflection",
+    "description": "Reflection Extend Library.",
+    "keywords": ["wandu", "reflection", "callable reflection"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Changwan Jun",
+            "email": "im@wani.kr"
+        }
+    ],
+    "require": {
+        "php": ">=5.5.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "4.5.*",
+        "mockery/mockery": "0.9.*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Wandu\\Reflection\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Wandu\\Reflection\\": "tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0-dev"
+        }
+    }
+}
