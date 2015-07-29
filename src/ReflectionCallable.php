@@ -2,7 +2,6 @@
 namespace Wandu\Reflection;
 
 use Closure;
-use Reflection;
 use ReflectionClass;
 use ReflectionFunctionAbstract;
 use ReflectionFunction;
