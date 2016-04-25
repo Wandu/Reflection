@@ -49,8 +49,8 @@ class ReflectionCallable extends ReflectionFunctionAbstract
 use Wandu\Reflection\ReflectionCallable;
 
 // 1. string of function's name.
-$reflection = new ReflectionCallable('yourfunctionname`); // OK
-$reflection = new ReflectionCallable('Your\OwnNamespace\yourfunctionname`); // with namespace also OK.
+$reflection = new ReflectionCallable('yourfunctionname'); // OK
+$reflection = new ReflectionCallable('Your\OwnNamespace\yourfunctionname'); // with namespace also OK.
 
 // 2. string of class and static method's name.
 $reflection = new ReflectionCallable('Your\OwnNamespace\MyClass::callMyMethod'); // OK
