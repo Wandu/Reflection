@@ -45,7 +45,7 @@ namespace Wandu\Reflection;
 use ReflectionFunctionAbstract;
 use Reflector;
 
-class ReflectionCallable extends ReflectionFunctionAbstract implement Reflector {
+class ReflectionCallable extends ReflectionFunctionAbstract implements Reflector {
 
     /* Method */
     public __construct( callable $callee )
