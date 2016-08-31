@@ -26,6 +26,9 @@ class ReflectionCallable extends ReflectionFunctionAbstract implements Reflector
     /** @var int */
     private $reflectionType;
     
+    /** @var boolean */
+    private $magicMethod = false;
+    
     /**
      * @param callable $callee
      */
@@ -33,6 +36,14 @@ class ReflectionCallable extends ReflectionFunctionAbstract implements Reflector
     {
         $this->callee = $callee;
         $this->reflection = $this->getFunctionAbstractReflection($callee);
+    }
+
+    /**
+     * @return boolean
+     */
+    public function isMagicMethod()
+    {
+        return $this->magicMethod;
     }
     
     /**
@@ -59,12 +70,21 @@ class ReflectionCallable extends ReflectionFunctionAbstract implements Reflector
             if (!isset($this->reflectionType)) {
                 $this->reflectionType = static::TYPE_INSTANCE_METHOD;
             }
-            $reflectionObject = new ReflectionObject($callee[0]);
-        } else {
-            $this->reflectionType = static::TYPE_STATIC_METHOD;
-            $reflectionObject = new ReflectionClass($callee[0]);
+            $reflection = new ReflectionObject($callee[0]);
+            if ($reflection->hasMethod($callee[1])) {
+                return $reflection->getMethod($callee[1]);
+            }
+            $this->magicMethod = true;
+            return $reflection->getMethod('__call');
         }
-        return $reflectionObject->getMethod($callee[1]);
+
+        $this->reflectionType = static::TYPE_STATIC_METHOD;
+        $reflection = new ReflectionClass($callee[0]);
+        if ($reflection->hasMethod($callee[1])) {
+            return $reflection->getMethod($callee[1]);
+        }
+        $this->magicMethod = true;
+        return $reflection->getMethod('__callStatic');
     }
 
     /**
@@ -233,6 +253,9 @@ class ReflectionCallable extends ReflectionFunctionAbstract implements Reflector
      */
     public function getName()
     {
+        if ($this->magicMethod) {
+            return $this->callee[1];
+        }
         return $this->reflection->getName();
     }
 
@@ -249,6 +272,9 @@ class ReflectionCallable extends ReflectionFunctionAbstract implements Reflector
      */
     public function getNumberOfParameters()
     {
+        if ($this->magicMethod) {
+            return 0;
+        }
         return $this->reflection->getNumberOfParameters();
     }
 
@@ -257,6 +283,9 @@ class ReflectionCallable extends ReflectionFunctionAbstract implements Reflector
      */
     public function getNumberOfRequiredParameters()
     {
+        if ($this->magicMethod) {
+            return 0;
+        }
         return $this->reflection->getNumberOfRequiredParameters();
     }
 
@@ -265,6 +294,9 @@ class ReflectionCallable extends ReflectionFunctionAbstract implements Reflector
      */
     public function getParameters()
     {
+        if ($this->magicMethod) {
+            return [];
+        }
         return $this->reflection->getParameters();
     }
 
@@ -273,6 +305,9 @@ class ReflectionCallable extends ReflectionFunctionAbstract implements Reflector
      */
     public function getShortName()
     {
+        if ($this->magicMethod) {
+            return $this->callee[1];
+        }
         return $this->reflection->getShortName();
     }
 

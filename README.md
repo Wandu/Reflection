@@ -34,20 +34,26 @@ It supports 6 types of callable object. (ref.
 5. object of class that has `__invoke` method. (ref. [Magic Method `__invoke`](http://php.net/manual/language.oop5.magic.php#object.invoke))
 6. object of `Closure`.
 
+and two more.
+
+1. `__call` magic method.
+2. `__callStatic` magic method.
+
 ```php
 namespace Wandu\Reflection;
 
 use ReflectionFunctionAbstract;
 use Reflector;
 
-class ReflectionCallable extends ReflectionFunctionAbstract implement Reflector
-{
+class ReflectionCallable extends ReflectionFunctionAbstract implement Reflector {
+
     /* Method */
-    public function __invoke(...$parameters);
-
-    /* Static Methods */
-    public static function getFunctionAbstractReflection(callable $callee);
-
+    public __construct( callable $callee )
+    public mixed __invoke( ...$parameters )
+    public boolean isMagicMethod()
+    public int getReflectionType()
+    public ReflectionFunctionAbstract getRawReflection()
+    
     /* Inherited methods */
     final private void ReflectionFunctionAbstract::__clone ( void )
     public ReflectionClass ReflectionFunctionAbstract::getClosureScopeClass ( void )
@@ -106,5 +112,22 @@ $reflection = new ReflectionCallable(new Your\OwnNamespace\ClassWithInvoke()); /
 $reflection = new ReflectionCallable(function ($param1, $param2) { /* do something */ });
 
 $reflection->getNumberOfParameters(); // return 2
-```
 
+// 7. __call
+$reflection = new ReflectionCallable([new Your\OwnNamespace\HasCallClass, 'anything']);
+
+$reflection->getNumberOfParameters(); // always return 0
+$reflection->getNumberOfRequiredParameters(); // always return 0
+$reflection->getParameters(); // always return []
+$reflection->getShortName(); // return 'anything'
+$reflection->getName(); // return 'anything'
+
+// 8. __callStatic
+$reflection = new ReflectionCallable([Your\OwnNamespace\HasCallStaticClass::class, 'anything']);
+
+$reflection->getNumberOfParameters(); // always return 0
+$reflection->getNumberOfRequiredParameters(); // always return 0
+$reflection->getParameters(); // always return []
+$reflection->getShortName(); // return 'anything'
+$reflection->getName(); // return 'anything'
+```
