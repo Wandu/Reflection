@@ -3,26 +3,84 @@ namespace Wandu\Reflection;
 
 use Closure;
 use ReflectionClass;
-use ReflectionFunctionAbstract;
 use ReflectionFunction;
+use ReflectionFunctionAbstract;
 use ReflectionObject;
+use Reflector;
 use RuntimeException;
 
-class ReflectionCallable extends ReflectionFunctionAbstract
+class ReflectionCallable extends ReflectionFunctionAbstract implements Reflector
 {
+    const TYPE_FUNCTION = 1;
+    const TYPE_STATIC_METHOD = 2;
+    const TYPE_INSTANCE_METHOD = 3;
+    const TYPE_INVOKER = 4;
+    const TYPE_CLOSURE = 5;
+        
     /** @var callable */
     private $callee;
 
     /** @var ReflectionFunctionAbstract */
     private $reflection;
 
+    /** @var int */
+    private $reflectionType;
+    
     /**
      * @param callable $callee
      */
     public function __construct(callable $callee)
     {
         $this->callee = $callee;
-        $this->reflection = static::getFunctionAbstractReflection($callee);
+        $this->reflection = $this->getFunctionAbstractReflection($callee);
+    }
+    
+    /**
+     * @param callable $callee
+     * @return ReflectionFunctionAbstract
+     */
+    protected function getFunctionAbstractReflection(callable $callee)
+    {
+        // closure, or function name,
+        if ($callee instanceof Closure) {
+            $this->reflectionType = static::TYPE_CLOSURE;
+            return new ReflectionFunction($callee);
+        } elseif (is_string($callee) && strpos($callee, '::') === false) {
+            $this->reflectionType = static::TYPE_FUNCTION;
+            return new ReflectionFunction($callee);
+        }
+        if (is_string($callee)) {
+            $callee = explode('::', $callee);
+        } elseif (is_object($callee)) {
+            $this->reflectionType = static::TYPE_INVOKER;
+            $callee = [$callee, '__invoke'];
+        }
+        if (is_object($callee[0])) {
+            if (!isset($this->reflectionType)) {
+                $this->reflectionType = static::TYPE_INSTANCE_METHOD;
+            }
+            $reflectionObject = new ReflectionObject($callee[0]);
+        } else {
+            $this->reflectionType = static::TYPE_STATIC_METHOD;
+            $reflectionObject = new ReflectionClass($callee[0]);
+        }
+        return $reflectionObject->getMethod($callee[1]);
+    }
+
+    /**
+     * @return int
+     */
+    public function getReflectionType()
+    {
+        return $this->reflectionType;
+    }
+
+    /**
+     * @return \ReflectionFunctionAbstract
+     */
+    public function getRawReflection()
+    {
+        return $this->reflection;
     }
 
     /**
@@ -32,6 +90,30 @@ class ReflectionCallable extends ReflectionFunctionAbstract
     public function __invoke()
     {
         return call_user_func_array($this->callee, func_get_args());
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function getReturnType()
+    {
+        return $this->reflection->getReturnType();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isGenerator()
+    {
+        return $this->reflection->isGenerator();
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    public function isVariadic()
+    {
+        return $this->reflection->isVariadic();
     }
 
     /**
@@ -216,28 +298,5 @@ class ReflectionCallable extends ReflectionFunctionAbstract
     public function returnsReference()
     {
         return $this->reflection->returnsReference();
-    }
-
-    /**
-     * @param callable $callee
-     * @return ReflectionFunctionAbstract
-     */
-    public static function getFunctionAbstractReflection(callable $callee)
-    {
-        // closure, or function name,
-        if ($callee instanceof Closure || (is_string($callee) && strpos($callee, '::') === false)) {
-            return new ReflectionFunction($callee);
-        }
-        if (is_string($callee)) {
-            $callee = explode('::', $callee);
-        } elseif (is_object($callee)) {
-            $callee = [$callee, '__invoke'];
-        }
-        if (is_object($callee[0])) {
-            $reflectionObject = new ReflectionObject($callee[0]);
-        } else {
-            $reflectionObject = new ReflectionClass($callee[0]);
-        }
-        return $reflectionObject->getMethod($callee[1]);
     }
 }

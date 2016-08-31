@@ -1,50 +1,80 @@
 <?php
 namespace Wandu\Reflection;
 
-use Closure;
-use Mockery;
 use PHPUnit_Framework_TestCase;
 use ReflectionFunctionAbstract;
-use Wandu\Reflection\Stub\StubCaller;
-use Wandu\Reflection\Stub\StubInvoker;
 
 class ReflectionCallableTest extends PHPUnit_Framework_TestCase
 {
     public function provideManyTypesOfCallable()
     {
         return [
+            [__NAMESPACE__ . '\testFunction', ReflectionCallable::TYPE_FUNCTION, 'function'],
+            [TestStringStaticSum::class . '::sum', ReflectionCallable::TYPE_STATIC_METHOD, 'string_static'],
+            [[TestArrayStaticSum::class, 'sum'], ReflectionCallable::TYPE_STATIC_METHOD, 'array_static'],
+            [[new TestInstanceSum, 'sum'], ReflectionCallable::TYPE_INSTANCE_METHOD, 'instance'],
+            [new TestInvoker, ReflectionCallable::TYPE_INVOKER, 'invoker'],
             [
                 function ($numberX, $numberY) {
-                    return "closure, sum=" . ($numberX + $numberY);
+                    return [$numberX + $numberY, 'closure'];
                 },
-                'closure'
+                ReflectionCallable::TYPE_CLOSURE,
+                'closure',
             ],
-            [[StubCaller::class, 'staticSum'], 'static'],
-            [StubCaller::class . '::staticSum', 'static'],
-            [[new StubCaller, 'instanceSum'], 'instance'],
-            [new StubInvoker, 'invoker'],
-            ['stubFunction', 'function'],
         ];
     }
 
     /**
      * @dataProvider provideManyTypesOfCallable
      */
-    public function testGetFunctionAbstractReflection($callee, $type)
+    public function testGetFunctionAbstractReflection($callee, $reflectionType, $resultText)
     {
-        $this->assertInstanceOf(
-            ReflectionFunctionAbstract::class,
-            ReflectionCallable::getFunctionAbstractReflection($callee)
-        );
-
         $reflection = new ReflectionCallable($callee);
 
         $this->assertEquals(2, $reflection->getNumberOfParameters());
 
-        // call test
-        $this->assertEquals("{$type}, sum=30", $reflection(10, 20));
+        // test invoke
+        $this->assertEquals([30, $resultText], $reflection->__invoke(10, 20));
+        
+        $this->assertEquals($reflectionType, $reflection->getReflectionType());
+        
+        $this->assertInstanceOf(ReflectionFunctionAbstract::class, $reflection->getRawReflection());
+    }
+}
 
-        // call test
-        $this->assertEquals("{$type}, sum=30", $reflection->__invoke(10, 20));
+function testFunction($numberX, $numberY)
+{
+    return [$numberX + $numberY, 'function'];
+}
+
+class TestStringStaticSum
+{
+    public static function sum($numberX, $numberY)
+    {
+        return [$numberX + $numberY, 'string_static'];
+    }
+}
+
+class TestArrayStaticSum
+{
+    public static function sum($numberX, $numberY)
+    {
+        return [$numberX + $numberY, 'array_static'];
+    }
+}
+
+class TestInstanceSum
+{
+    public function sum($numberX, $numberY)
+    {
+        return [$numberX + $numberY, 'instance'];
+    }
+}
+
+class TestInvoker
+{
+    public function __invoke($numberX, $numberY)
+    {
+        return [$numberX + $numberY, 'invoker'];
     }
 }

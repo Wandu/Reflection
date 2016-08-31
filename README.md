@@ -12,12 +12,20 @@ Wandu Reflection
 
 Reflection Extend Library.
 
+## Installation
+
+```
+$ composer require wandu/reflection
+```
+
 ## Documents
 
+ - [ReflectionCallable](#reflectioncallable)
+ 
 ### ReflectionCallable
 
 It supports 6 types of callable object. (ref.
-[Wani Blog, Callable](http://blog.wani.kr/dev/php/php-something-4-callable))
+[Wani Blog, Callable](http://blog.wani.kr/posts/2015/05/02/php-something-4-callable/))
 
 1. string of function's name.
 2. string of class and static method's name.
@@ -29,7 +37,10 @@ It supports 6 types of callable object. (ref.
 ```php
 namespace Wandu\Reflection;
 
-class ReflectionCallable extends ReflectionFunctionAbstract
+use ReflectionFunctionAbstract;
+use Reflector;
+
+class ReflectionCallable extends ReflectionFunctionAbstract implement Reflector
 {
     /* Method */
     public function __invoke(...$parameters);
@@ -37,7 +48,34 @@ class ReflectionCallable extends ReflectionFunctionAbstract
     /* Static Methods */
     public static function getFunctionAbstractReflection(callable $callee);
 
-    /* Also, you can use every ReflectionFunctionAbstract's methods :-) */
+    /* Inherited methods */
+    final private void ReflectionFunctionAbstract::__clone ( void )
+    public ReflectionClass ReflectionFunctionAbstract::getClosureScopeClass ( void )
+    public object ReflectionFunctionAbstract::getClosureThis ( void )
+    public string ReflectionFunctionAbstract::getDocComment ( void )
+    public int ReflectionFunctionAbstract::getEndLine ( void )
+    public ReflectionExtension ReflectionFunctionAbstract::getExtension ( void )
+    public string ReflectionFunctionAbstract::getExtensionName ( void )
+    public string ReflectionFunctionAbstract::getFileName ( void )
+    public string ReflectionFunctionAbstract::getName ( void )
+    public string ReflectionFunctionAbstract::getNamespaceName ( void )
+    public int ReflectionFunctionAbstract::getNumberOfParameters ( void )
+    public int ReflectionFunctionAbstract::getNumberOfRequiredParameters ( void )
+    public array ReflectionFunctionAbstract::getParameters ( void )
+    public ReflectionType ReflectionFunctionAbstract::getReturnType ( void )
+    public string ReflectionFunctionAbstract::getShortName ( void )
+    public int ReflectionFunctionAbstract::getStartLine ( void )
+    public array ReflectionFunctionAbstract::getStaticVariables ( void )
+    public bool ReflectionFunctionAbstract::hasReturnType ( void )
+    public bool ReflectionFunctionAbstract::inNamespace ( void )
+    public bool ReflectionFunctionAbstract::isClosure ( void )
+    public bool ReflectionFunctionAbstract::isDeprecated ( void )
+    public bool ReflectionFunctionAbstract::isGenerator ( void )
+    public bool ReflectionFunctionAbstract::isInternal ( void )
+    public bool ReflectionFunctionAbstract::isUserDefined ( void )
+    public bool ReflectionFunctionAbstract::isVariadic ( void )
+    public bool ReflectionFunctionAbstract::returnsReference ( void )
+    abstract public void ReflectionFunctionAbstract::__toString ( void )
 }
 ```
 
