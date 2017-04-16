@@ -50,6 +50,7 @@ class ReflectionCallable extends ReflectionFunctionAbstract implements Reflector
     /* Method */
     public __construct( callable $callee )
     public mixed __invoke( ...$parameters )
+    public string getCallableName()
     public boolean isMagicMethod()
     public int getReflectionType()
     public ReflectionFunctionAbstract getRawReflection()

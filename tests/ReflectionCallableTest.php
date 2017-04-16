@@ -9,7 +9,7 @@ class ReflectionCallableTest extends PHPUnit_Framework_TestCase
     public function provideManyTypesOfCallable()
     {
         return [
-            [__NAMESPACE__ . '\testFunction', ReflectionCallable::TYPE_FUNCTION, 'function'],
+            ['Wandu\Reflection\testFunction', ReflectionCallable::TYPE_FUNCTION, 'function'],
             [TestStringStaticSum::class . '::sum', ReflectionCallable::TYPE_STATIC_METHOD, 'string_static'],
             [[TestArrayStaticSum::class, 'sum'], ReflectionCallable::TYPE_STATIC_METHOD, 'array_static'],
             [[new TestInstanceSum, 'sum'], ReflectionCallable::TYPE_INSTANCE_METHOD, 'instance'],
@@ -73,6 +73,34 @@ class ReflectionCallableTest extends PHPUnit_Framework_TestCase
         $this->assertEquals('sum', $reflection->getName());
 
         $this->assertEquals(['sum', [20, 30]], $reflection->__invoke(20, 30));
+    }
+
+    public function provideCallableVarsForTestingGetCallableName()
+    {
+        return [
+            ['Wandu\Reflection\testFunction', 'Wandu\Reflection\testFunction'],
+            [TestStringStaticSum::class . '::sum', 'Wandu\Reflection\TestStringStaticSum::sum'],
+            [[TestArrayStaticSum::class, 'sum'], 'Wandu\Reflection\TestArrayStaticSum::sum'],
+            [[new TestInstanceSum, 'sum'], 'Wandu\Reflection\TestInstanceSum::sum'],
+            [[new TestMagicMethodCall(), 'sum'], 'Wandu\Reflection\TestMagicMethodCall::__call'],
+            [[TestMagicMethodCallStatic::class, 'sum'], 'Wandu\Reflection\TestMagicMethodCallStatic::__callStatic'],
+            [new TestInvoker, 'Wandu\Reflection\TestInvoker::__invoke'],
+            [
+                function ($numberX, $numberY) {
+                    return [$numberX + $numberY, 'closure'];
+                },
+                'Closure'
+            ],
+        ];
+    }
+
+    /**
+     * @dataProvider provideCallableVarsForTestingGetCallableName
+     */
+    public function testGetCallableName($callable, $string)
+    {
+        $refl = new ReflectionCallable($callable);
+        static::assertSame($string, $refl->getCallableName());
     }
 }
 

@@ -39,6 +39,29 @@ class ReflectionCallable extends ReflectionFunctionAbstract implements Reflector
     }
 
     /**
+     * @return string
+     */
+    public function getCallableName()
+    {
+        if (is_string($this->callee)) {
+            return $this->callee;
+        } elseif (is_array($this->callee)) {
+            if (is_string($this->callee[0])) {
+                return $this->callee[0] . '::' . ($this->isMagicMethod() ? '__callStatic' : $this->callee[1]);
+            } else {
+                return get_class($this->callee[0]) . '::' . ($this->isMagicMethod() ? '__call' : $this->callee[1]);
+            }
+        } elseif ($this->callee instanceof Closure) {
+            return Closure::class;
+        } elseif (is_object($this->callee)) {
+            return get_class($this->callee) . '::__invoke';
+        }
+
+        // fallback..
+        return $this->reflection->getShortName();
+    }
+
+    /**
      * @return boolean
      */
     public function isMagicMethod()
